@@ -8,6 +8,7 @@ import android.graphics.Bitmap;
 public class CropParameters {
 
     private int mMaxResultImageSizeX, mMaxResultImageSizeY;
+    private int mDstResultImageSizeX,mDstResultImageSizeY;
 
     private Bitmap.CompressFormat mCompressFormat;
     private int mCompressQuality;
@@ -16,10 +17,13 @@ public class CropParameters {
 
 
     public CropParameters(int maxResultImageSizeX, int maxResultImageSizeY,
+                          int dstResultImageSizeX, int dstResultImageSizeY,
                           Bitmap.CompressFormat compressFormat, int compressQuality,
                           String imageInputPath, String imageOutputPath, ExifInfo exifInfo) {
         mMaxResultImageSizeX = maxResultImageSizeX;
         mMaxResultImageSizeY = maxResultImageSizeY;
+        mDstResultImageSizeX = dstResultImageSizeX;
+        mDstResultImageSizeY = dstResultImageSizeY;
         mCompressFormat = compressFormat;
         mCompressQuality = compressQuality;
         mImageInputPath = imageInputPath;
@@ -37,6 +41,14 @@ public class CropParameters {
 
     public Bitmap.CompressFormat getCompressFormat() {
         return mCompressFormat;
+    }
+
+    public int getmDstResultImageSizeX() {
+        return mDstResultImageSizeX;
+    }
+
+    public int getmDstResultImageSizeY() {
+        return mDstResultImageSizeY;
     }
 
     public int getCompressQuality() {

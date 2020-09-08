@@ -212,8 +212,8 @@ public class UCropActivity extends AppCompatActivity {
     }
 
     /**
-     * This method extracts {@link com.yalantis.ucrop.UCrop.Options #optionsBundle} from incoming intent
-     * and setups Activity, {@link OverlayView} and {@link CropImageView} properly.
+     * This method extracts {@link com.yalantis.ucrop.UCrop.Options #optionsBundle} from incoming
+     * intent and setups Activity, {@link OverlayView} and {@link CropImageView} properly.
      */
     @SuppressWarnings("deprecation")
     private void processOptions(@NonNull Intent intent) {
@@ -281,6 +281,13 @@ public class UCropActivity extends AppCompatActivity {
         if (maxSizeX > 0 && maxSizeY > 0) {
             mGestureCropImageView.setMaxResultImageSizeX(maxSizeX);
             mGestureCropImageView.setMaxResultImageSizeY(maxSizeY);
+        }
+
+        int dstSizeX = intent.getIntExtra(UCrop.EXTRA_DST_SIZE_X, 0);
+        int dstSizeY = intent.getIntExtra(UCrop.EXTRA_DST_SIZE_Y, 0);
+        if (dstSizeX > 0 && dstSizeY > 0) {
+            mGestureCropImageView.setmDstResultImageSizeX(dstSizeX);
+            mGestureCropImageView.setmDstResultImageSizeY(dstSizeY);
         }
     }
 
@@ -644,9 +651,9 @@ public class UCropActivity extends AppCompatActivity {
     }
 
     /**
-     * Adds view that covers everything below the Toolbar.
-     * When it's clickable - user won't be able to click/touch anything below the Toolbar.
-     * Need to block user input while loading and cropping an image.
+     * Adds view that covers everything below the Toolbar. When it's clickable - user won't be able
+     * to click/touch anything below the Toolbar. Need to block user input while loading and
+     * cropping an image.
      */
     private void addBlockingView() {
         if (mBlockingView == null) {

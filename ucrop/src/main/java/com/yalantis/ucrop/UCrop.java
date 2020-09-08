@@ -52,6 +52,8 @@ public class UCrop {
     public static final String EXTRA_MAX_SIZE_X = EXTRA_PREFIX + ".MaxSizeX";
     public static final String EXTRA_MAX_SIZE_Y = EXTRA_PREFIX + ".MaxSizeY";
 
+    public static final String EXTRA_DST_SIZE_X = EXTRA_PREFIX + ".DstSizeX";
+    public static final String EXTRA_DST_SIZE_Y = EXTRA_PREFIX + ".DstSizeY";
     private Intent mCropIntent;
     private Bundle mCropOptionsBundle;
 
@@ -112,6 +114,19 @@ public class UCrop {
 
         mCropOptionsBundle.putInt(EXTRA_MAX_SIZE_X, width);
         mCropOptionsBundle.putInt(EXTRA_MAX_SIZE_Y, height);
+        return this;
+    }
+
+    /**
+     * 设置最终输出的图片宽高
+     *
+     * @param width  宽度
+     * @param height 高度
+     * @return
+     */
+    public UCrop withDstResultSize(int width, int height) {
+        mCropOptionsBundle.putInt(EXTRA_DST_SIZE_X, width);
+        mCropOptionsBundle.putInt(EXTRA_DST_SIZE_Y, height);
         return this;
     }
 
@@ -254,8 +269,8 @@ public class UCrop {
 
 
     /**
-     * Class that helps to setup advanced configs that are not commonly used.
-     * Use it with method {@link #withOptions(Options)}
+     * Class that helps to setup advanced configs that are not commonly used. Use it with method
+     * {@link #withOptions(Options)}
      */
     public static class Options {
 
@@ -314,7 +329,8 @@ public class UCrop {
         }
 
         /**
-         * Set one of {@link android.graphics.Bitmap.CompressFormat} that will be used to save resulting Bitmap.
+         * Set one of {@link android.graphics.Bitmap.CompressFormat} that will be used to save
+         * resulting Bitmap.
          */
         public void setCompressionFormat(@NonNull Bitmap.CompressFormat format) {
             mOptionBundle.putString(EXTRA_COMPRESSION_FORMAT_NAME, format.name());
@@ -337,7 +353,8 @@ public class UCrop {
         }
 
         /**
-         * This method sets multiplier that is used to calculate max image scale from min image scale.
+         * This method sets multiplier that is used to calculate max image scale from min image
+         * scale.
          *
          * @param maxScaleMultiplier - (minScale * maxScaleMultiplier) = maxScale
          */
@@ -355,7 +372,8 @@ public class UCrop {
         }
 
         /**
-         * Setter for max size for both width and height of bitmap that will be decoded from an input Uri and used in the view.
+         * Setter for max size for both width and height of bitmap that will be decoded from an
+         * input Uri and used in the view.
          *
          * @param maxBitmapSize - size in pixels
          */
@@ -455,14 +473,16 @@ public class UCrop {
         }
 
         /**
-         * @param color - desired resolved color of the active and selected widget and progress wheel middle line (default is white)
+         * @param color - desired resolved color of the active and selected widget and progress
+         *              wheel middle line (default is white)
          */
         public void setActiveControlsWidgetColor(@ColorInt int color) {
             mOptionBundle.putInt(EXTRA_UCROP_COLOR_CONTROLS_WIDGET_ACTIVE, color);
         }
 
         /**
-         * @param color - desired resolved color of Toolbar text and buttons (default is darker orange)
+         * @param color - desired resolved color of Toolbar text and buttons (default is darker
+         *              orange)
          */
         public void setToolbarWidgetColor(@ColorInt int color) {
             mOptionBundle.putInt(EXTRA_UCROP_WIDGET_COLOR_TOOLBAR, color);
@@ -513,7 +533,8 @@ public class UCrop {
         /**
          * Pass an ordered list of desired aspect ratios that should be available for a user.
          *
-         * @param selectedByDefault - index of aspect ratio option that is selected by default (starts with 0).
+         * @param selectedByDefault - index of aspect ratio option that is selected by default
+         *                          (starts with 0).
          * @param aspectRatio       - list of aspect ratio options that are available to user
          */
         public void setAspectRatioOptions(int selectedByDefault, AspectRatio... aspectRatio) {
@@ -534,8 +555,7 @@ public class UCrop {
         }
 
         /**
-         * Set an aspect ratio for crop bounds.
-         * User won't see the menu with other ratios options.
+         * Set an aspect ratio for crop bounds. User won't see the menu with other ratios options.
          *
          * @param x aspect ratio X
          * @param y aspect ratio Y

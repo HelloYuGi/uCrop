@@ -2,6 +2,7 @@ package com.yalantis.ucrop.task;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Matrix;
 import android.graphics.RectF;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -15,6 +16,8 @@ import com.yalantis.ucrop.util.FileUtils;
 import com.yalantis.ucrop.util.ImageHeaderParser;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 
 import androidx.annotation.NonNull;
@@ -25,8 +28,7 @@ import androidx.exifinterface.media.ExifInterface;
  * Crops part of image that fills the crop bounds.
  * <p/>
  * First image is downscaled if max size was set and if resulting image is larger that max size.
- * Then image is rotated accordingly.
- * Finally new Bitmap object is created and saved to file.
+ * Then image is rotated accordingly. Finally new Bitmap object is created and saved to file.
  */
 public class BitmapCropTask extends AsyncTask<Void, Void, Throwable> {
 
@@ -52,6 +54,9 @@ public class BitmapCropTask extends AsyncTask<Void, Void, Throwable> {
 
     private int mCroppedImageWidth, mCroppedImageHeight;
     private int cropOffsetX, cropOffsetY;
+    //目标宽高
+    private int dstWidth = 0;
+    private int dstHeight = 0;
 
     public BitmapCropTask(@Nullable Bitmap viewBitmap, @NonNull ImageState imageState, @NonNull CropParameters cropParameters,
                           @Nullable BitmapCropCallback cropCallback) {
@@ -64,6 +69,9 @@ public class BitmapCropTask extends AsyncTask<Void, Void, Throwable> {
         mCurrentAngle = imageState.getCurrentAngle();
         mMaxResultImageSizeX = cropParameters.getMaxResultImageSizeX();
         mMaxResultImageSizeY = cropParameters.getMaxResultImageSizeY();
+
+        dstWidth = cropParameters.getmDstResultImageSizeX();
+        dstHeight = cropParameters.getmDstResultImageSizeY();
 
         mCompressFormat = cropParameters.getCompressFormat();
         mCompressQuality = cropParameters.getCompressQuality();
@@ -140,14 +148,18 @@ public class BitmapCropTask extends AsyncTask<Void, Void, Throwable> {
         Log.i(TAG, "Should crop: " + shouldCrop);
 
         if (shouldCrop) {
-            boolean cropped = cropCImg(mImageInputPath, mImageOutputPath,
-                    cropOffsetX, cropOffsetY, mCroppedImageWidth, mCroppedImageHeight,
-                    mCurrentAngle, resizeScale, mCompressFormat.ordinal(), mCompressQuality,
-                    mExifInfo.getExifDegrees(), mExifInfo.getExifTranslation());
-            if (cropped && mCompressFormat.equals(Bitmap.CompressFormat.JPEG)) {
-                ImageHeaderParser.copyExif(originalExif, mCroppedImageWidth, mCroppedImageHeight, mImageOutputPath);
-            }
-            return cropped;
+//            boolean cropped = cropCImg(mImageInputPath, mImageOutputPath,
+//                    cropOffsetX, cropOffsetY, mCroppedImageWidth, mCroppedImageHeight,
+//                    mCurrentAngle, resizeScale, mCompressFormat.ordinal(), mCompressQuality,
+//                    mExifInfo.getExifDegrees(), mExifInfo.getExifTranslation());
+//            if (cropped && mCompressFormat.equals(Bitmap.CompressFormat.JPEG)) {
+//                reCreateImage();
+//                ImageHeaderParser.copyExif(originalExif, mCroppedImageWidth, mCroppedImageHeight, mImageOutputPath);
+//                Log.d("wsw","outPutPath = " + mImageOutputPath);
+//            }
+//            return cropped;
+            reCreateImage(mImageInputPath, mImageInputPath, mCurrentAngle);
+            return true;
         } else {
             FileUtils.copyFile(mImageInputPath, mImageOutputPath);
             return false;
@@ -155,8 +167,8 @@ public class BitmapCropTask extends AsyncTask<Void, Void, Throwable> {
     }
 
     /**
-     * Check whether an image should be cropped at all or just file can be copied to the destination path.
-     * For each 1000 pixels there is one pixel of error due to matrix calculations etc.
+     * Check whether an image should be cropped at all or just file can be copied to the destination
+     * path. For each 1000 pixels there is one pixel of error due to matrix calculations etc.
      *
      * @param width  - crop area width
      * @param height - crop area height
@@ -186,11 +198,79 @@ public class BitmapCropTask extends AsyncTask<Void, Void, Throwable> {
         if (mCropCallback != null) {
             if (t == null) {
                 Uri uri = Uri.fromFile(new File(mImageOutputPath));
-                mCropCallback.onBitmapCropped(uri, cropOffsetX, cropOffsetY, mCroppedImageWidth, mCroppedImageHeight);
+                final BitmapFactory.Options options = new BitmapFactory.Options();
+                options.inJustDecodeBounds = true;
+                BitmapFactory.decodeFile(mImageOutputPath, options);
+                mCropCallback.onBitmapCropped(uri, cropOffsetX, cropOffsetY, options.outWidth, options.outHeight);
             } else {
                 mCropCallback.onCropFailure(t);
             }
         }
     }
 
+    //根据目标宽高重新生成图片
+    //使用java的方法
+    private void reCreateImage(String inputPath, String outPutPath, float rotateAngle) {
+        Bitmap cropBm = BitmapFactory.decodeFile(inputPath);
+        Log.d("wsw", "x Scale = " + mCurrentImageRect.width() / cropBm.getWidth() + "y Scale = " + mCurrentImageRect.height() / cropBm.getHeight() + "current =" + mCurrentScale);
+        FileOutputStream fos = null;
+        try {
+            fos = new FileOutputStream(outPutPath);
+            if (rotateAngle != 0) {
+                Matrix matrix = new Matrix();
+                matrix.setRotate(rotateAngle, cropBm.getWidth() / 2f, cropBm.getHeight() / 2f);
+                Bitmap rotateBm = Bitmap.createBitmap(cropBm, 0, 0, cropBm.getWidth(), cropBm.getHeight(), matrix, false);
+                cropBm.recycle();
+                cropBm = rotateBm;
+            }
+            cropBm = Bitmap.createBitmap(cropBm, cropOffsetX, cropOffsetY, mCroppedImageWidth, mCroppedImageHeight);
+            if (dstWidth > 0 && dstHeight > 0) {
+                int cropWidth = cropBm.getWidth();
+                int cropHeight = cropBm.getHeight();
+                Matrix matrix = new Matrix();
+                matrix.postScale(dstWidth / (float) cropWidth, dstHeight / (float) cropHeight);
+                cropBm = Bitmap.createBitmap(cropBm, 0, 0, cropWidth, cropHeight, matrix, false);
+            }
+            cropBm.compress(Bitmap.CompressFormat.JPEG, 100, fos);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (fos != null) {
+                    fos.close();
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    //根据目标宽高重新生成图片
+    private void reCreateImage() {
+        if (dstHeight <= 0 || dstWidth <= 0) {
+            return;
+        }
+        Bitmap cropBm = BitmapFactory.decodeFile(mImageOutputPath);
+        int cropWidth = cropBm.getWidth();
+        int cropHeight = cropBm.getHeight();
+        Log.d("wsw", "bmWidth = " + cropWidth + ",bmHeight = " + cropHeight);
+        FileOutputStream fos = null;
+        try {
+            fos = new FileOutputStream(mImageOutputPath);
+            Matrix matrix = new Matrix();
+            matrix.postScale(dstWidth / (float) cropWidth, dstHeight / (float) cropHeight);
+            Bitmap newBm = Bitmap.createBitmap(cropBm, 0, 0, cropWidth, cropHeight, matrix, false);
+            newBm.compress(Bitmap.CompressFormat.JPEG, 100, fos);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (fos != null) {
+                    fos.close();
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
 }

@@ -52,6 +52,7 @@ public class CropImageView extends TransformImageView {
 
     private float mMaxScale, mMinScale;
     private int mMaxResultImageSizeX = 0, mMaxResultImageSizeY = 0;
+    private int mDstResultImageSizeX = 0, mDstResultImageSizeY = 0;
     private long mImageToWrapCropBoundsAnimDuration = DEFAULT_IMAGE_TO_CROP_BOUNDS_ANIM_DURATION;
 
     public CropImageView(Context context) {
@@ -81,6 +82,7 @@ public class CropImageView extends TransformImageView {
 
         final CropParameters cropParameters = new CropParameters(
                 mMaxResultImageSizeX, mMaxResultImageSizeY,
+                mDstResultImageSizeX,mDstResultImageSizeY,
                 compressFormat, compressQuality,
                 getImageInputPath(), getImageOutputPath(), getExifInfo());
 
@@ -166,6 +168,7 @@ public class CropImageView extends TransformImageView {
         mMaxResultImageSizeX = maxResultImageSizeX;
     }
 
+
     /**
      * This method sets maximum width for resulting cropped image
      *
@@ -173,6 +176,14 @@ public class CropImageView extends TransformImageView {
      */
     public void setMaxResultImageSizeY(@IntRange(from = 10) int maxResultImageSizeY) {
         mMaxResultImageSizeY = maxResultImageSizeY;
+    }
+
+    public void setmDstResultImageSizeX(int mDstResultImageSizeX) {
+        this.mDstResultImageSizeX = mDstResultImageSizeX;
+    }
+
+    public void setmDstResultImageSizeY(int mDstResultImageSizeY) {
+        this.mDstResultImageSizeY = mDstResultImageSizeY;
     }
 
     /**

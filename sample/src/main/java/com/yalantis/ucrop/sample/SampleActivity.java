@@ -229,8 +229,8 @@ public class SampleActivity extends BaseActivity implements UCropFragmentCallbac
                 destinationFileName += ".jpg";
                 break;
         }
-
-        UCrop uCrop = UCrop.of(uri, Uri.fromFile(new File(getCacheDir(), destinationFileName)));
+        UCrop uCrop = UCrop.of(uri, Uri.fromFile(new File(getCacheDir(), destinationFileName))).withAspectRatio(9, 16).withDstResultSize(1080, 1920);
+//        UCrop uCrop = UCrop.of(uri, Uri.fromFile(new File(getCacheDir(), destinationFileName)));
 
         uCrop = basisConfig(uCrop);
         uCrop = advancedConfig(uCrop);
@@ -289,7 +289,8 @@ public class SampleActivity extends BaseActivity implements UCropFragmentCallbac
     }
 
     /**
-     * Sometimes you want to adjust more options, it's done via {@link com.yalantis.ucrop.UCrop.Options} class.
+     * Sometimes you want to adjust more options, it's done via {@link
+     * com.yalantis.ucrop.UCrop.Options} class.
      *
      * @param uCrop - ucrop builder instance
      * @return - ucrop builder instance
